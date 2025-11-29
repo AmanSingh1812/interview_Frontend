@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API = "https://unencroached-kori-debasingly.ngrok-free.dev/api";
-
+const API = "https://unencroached-kori-debasingly.ngrok-free.dev/api/";
 
 export default function SelectInterview() {
   const navigate = useNavigate();
@@ -18,8 +17,8 @@ export default function SelectInterview() {
   useEffect(() => {
     async function loadMeta() {
       try {
-        const r = await axios.get(`${API}/roles/`);
-        const s = await axios.get(`${API}/skills/`);
+        const r = await axios.get(`${API}roles/`);
+        const s = await axios.get(`${API}skills/`);
 
         setRoles(r.data);
         setSkills(s.data);
@@ -46,9 +45,6 @@ export default function SelectInterview() {
 
     navigate("/interview?" + params.join("&"));
   }
-
-  console.log("Roles API Response:", roles);
-  
 
   return (
     <div className="min-h-screen bg-black text-white p-8">

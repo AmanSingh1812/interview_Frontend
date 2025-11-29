@@ -7,31 +7,55 @@ export default function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [questions, setQuestions] = useState([]);
 
+  const [roles, setRoles] = useState([]);
+  const [skills, setSkills] = useState([]);
+
   const [newQ, setNewQ] = useState("");
   const [role, setRole] = useState("");
   const [skill, setSkill] = useState("");
-  const [level, setLevel] = useState(""); // ⭐ NEW FIELD
+  const [level, setLevel] = useState("");
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    loadMeta();
     loadData();
   }, []);
+
+  async function loadMeta() {
+    try {
+      const r = await axios.get(`${API}/roles/`);
+      const s = await axios.get(`${API}/skills/`);
+
+      setRoles(r.data);
+      setSkills(s.data);
+    } catch (err) {
+      console.error("Failed to load meta", err);
+    }
+  }
 
   async function loadData() {
     try {
       const userRes = await axios.get(`${API}/admin/list-users/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setUsers(userRes.data);
 
       const qRes = await axios.get(`${API}/admin/list-questions/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setQuestions(qRes.data);
     } catch (err) {
       console.error("Admin load error", err);
-      alert("❌ You are not allowed to access admin panel");
+
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        window.location.href = "/login";
+      } else {
+        alert("❌ You are not allowed to access admin panel");
+      }
     }
   }
 
@@ -39,7 +63,7 @@ export default function AdminPanel() {
     if (!newQ.trim()) return alert("Enter question");
     if (!role) return alert("Select role");
     if (!skill) return alert("Select skill");
-    if (!level) return alert("Select difficulty level");
+    if (!level) return alert("Select difficulty");
 
     try {
       await axios.post(
@@ -48,7 +72,6 @@ export default function AdminPanel() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Reset fields
       setNewQ("");
       setRole("");
       setSkill("");
@@ -57,43 +80,24 @@ export default function AdminPanel() {
       loadData();
     } catch (err) {
       console.error("Add question error", err);
+      alert("Unable to add question");
     }
   }
 
   return (
     <div className="min-h-screen p-8 text-white bg-black">
-      {/* Title */}
-      <h1
-        className="
-          text-5xl font-extrabold text-center mb-12
-          text-[#3b82f6]
-          drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]
-        "
-      >
+      <h1 className="text-5xl font-extrabold text-center mb-12 text-[#3b82f6]">
         👑 Admin Dashboard
       </h1>
 
-      {/* Add Question */}
-      <div
-        className="
-          bg-[#0d0d0d] border border-[#1f2937] rounded-2xl 
-          p-8 mb-14 max-w-3xl mx-auto
-          shadow-[0_0_25px_rgba(0,0,0,0.7)]
-          hover:bg-[#111] transition
-        "
-      >
+      {/* ADD QUESTION */}
+      <div className="bg-[#0d0d0d] border border-[#1f2937] rounded-2xl p-8 mb-14 max-w-3xl mx-auto shadow-[0_0_25px_rgba(0,0,0,0.7)]">
         <h2 className="text-3xl font-bold mb-6 text-[#3b82f6]">
           ➕ Add Interview Question
         </h2>
 
         <textarea
-          className="
-            w-full p-4 rounded-xl bg-[#111] text-white
-            border border-[#1f2937]
-            focus:border-[#3b82f6]
-            focus:shadow-[0_0_10px_rgba(59,130,246,0.6)]
-            outline-none transition
-          "
+          className="w-full p-4 rounded-xl bg-[#111] border border-[#1f2937] text-white"
           placeholder="Enter interview question..."
           rows={3}
           value={newQ}
@@ -104,53 +108,35 @@ export default function AdminPanel() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           {/* ROLE */}
           <select
-            className="
-              p-4 rounded-xl bg-[#111] text-white
-              border border-[#1f2937]
-              focus:border-[#3b82f6]
-              focus:shadow-[0_0_10px_rgba(59,130,246,0.6)]
-              outline-none transition
-            "
+            className="p-4 rounded-xl bg-[#111] border border-[#1f2937]"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
             <option value="">Select Role</option>
-            <option value="frontend">Frontend</option>
-            <option value="backend">Backend</option>
-            <option value="fullstack">Fullstack</option>
-            <option value="devops">DevOps</option>
+            {roles.map((r, i) => (
+              <option key={i} value={r}>
+                {r}
+              </option>
+            ))}
           </select>
 
           {/* SKILL */}
           <select
-            className="
-              p-4 rounded-xl bg-[#111] text-white
-              border border-[#1f2937]
-              focus:border-[#3b82f6]
-              focus:shadow-[0_0_10px_rgba(59,130,246,0.6)]
-              outline-none transition
-            "
+            className="p-4 rounded-xl bg-[#111] border border-[#1f2937]"
             value={skill}
             onChange={(e) => setSkill(e.target.value)}
           >
             <option value="">Select Skill</option>
-            <option value="javascript">JavaScript</option>
-            <option value="react">React</option>
-            <option value="python">Python</option>
-            <option value="java">Java</option>
-            <option value="django">Django</option>
-            <option value="others">Others</option>
+            {skills.map((s, i) => (
+              <option key={i} value={s}>
+                {s}
+              </option>
+            ))}
           </select>
 
-          {/* LEVEL (⭐ NEW) */}
+          {/* LEVEL */}
           <select
-            className="
-              p-4 rounded-xl bg-[#111] text-white
-              border border-[#1f2937]
-              focus:border-[#3b82f6]
-              focus:shadow-[0_0_10px_rgba(59,130,246,0.6)]
-              outline-none transition
-            "
+            className="p-4 rounded-xl bg-[#111] border border-[#1f2937]"
             value={level}
             onChange={(e) => setLevel(e.target.value)}
           >
@@ -163,27 +149,14 @@ export default function AdminPanel() {
 
         <button
           onClick={addQuestion}
-          className="
-            mt-8 w-full py-4 rounded-xl font-semibold
-            bg-[#3b82f6] hover:bg-[#2563eb]
-            shadow-[0_0_15px_rgba(59,130,246,0.6)]
-            hover:shadow-[0_0_25px_rgba(59,130,246,0.8)]
-            transition-all
-          "
+          className="mt-8 w-full py-4 rounded-xl font-semibold bg-[#3b82f6] hover:bg-[#2563eb]"
         >
           Add Question
         </button>
       </div>
 
       {/* USERS LIST */}
-      <div
-        className="
-          bg-[#0d0d0d] border border-[#1f2937] rounded-2xl 
-          p-8 mb-14 max-w-3xl mx-auto
-          shadow-[0_0_25px_rgba(0,0,0,0.7)]
-          hover:bg-[#111] transition
-        "
-      >
+      <div className="bg-[#0d0d0d] border border-[#1f2937] rounded-2xl p-8 mb-14 max-w-3xl mx-auto shadow-[0_0_25px_rgba(0,0,0,0.7)]">
         <h2 className="text-3xl font-bold mb-6 text-[#3b82f6]">
           👥 Registered Users
         </h2>
@@ -192,11 +165,7 @@ export default function AdminPanel() {
           {users.map((u, i) => (
             <li
               key={i}
-              className="
-                p-4 rounded-xl bg-[#111] border border-[#1f2937]
-                hover:border-[#3b82f6] hover:shadow-[0_0_12px_rgba(59,130,246,0.5)]
-                transition
-              "
+              className="p-4 rounded-xl bg-[#111] border border-[#1f2937]"
             >
               <span className="font-bold text-[#3b82f6]">{u.full_name}</span>
               {" — "}
@@ -207,14 +176,7 @@ export default function AdminPanel() {
       </div>
 
       {/* QUESTIONS LIST */}
-      <div
-        className="
-          bg-[#0d0d0d] border border-[#1f2937] rounded-2xl 
-          p-8 max-w-3xl mx-auto
-          shadow-[0_0_25px_rgba(0,0,0,0.7)]
-          hover:bg-[#111] transition
-        "
-      >
+      <div className="bg-[#0d0d0d] border border-[#1f2937] rounded-2xl p-8 max-w-3xl mx-auto shadow-[0_0_25px_rgba(0,0,0,0.7)]">
         <h2 className="text-3xl font-bold mb-6 text-[#3b82f6]">
           📚 Interview Questions
         </h2>
@@ -223,11 +185,7 @@ export default function AdminPanel() {
           {questions.map((q, i) => (
             <li
               key={i}
-              className="
-                p-4 rounded-xl bg-[#111] border border-[#1f2937]
-                hover:border-[#3b82f6] hover:shadow-[0_0_12px_rgba(59,130,246,0.5)]
-                transition
-              "
+              className="p-4 rounded-xl bg-[#111] border border-[#1f2937]"
             >
               <span className="font-bold text-purple-400">
                 [{q.role.toUpperCase()} — {q.skill} — {q.level}]

@@ -11,7 +11,7 @@ export default function Recorder({
   const [error, setError] = useState(null);
 
   const recognitionRef = useRef(null);
-  const finalTranscriptRef = useRef(""); // only store final
+  const finalTranscriptRef = useRef("");
   const silenceTimerRef = useRef(null);
 
   useEffect(() => {
@@ -42,15 +42,20 @@ export default function Recorder({
         }
       }
 
-      // Live interim text (never saved)
-      if (interim) {
-        onIntermediate && onIntermediate(interim.trim());
+      // Send live partial text
+      if (interim.trim()) {
+        onIntermediate?.(interim.trim());
       }
 
-      // When browser gives final text → append it ONLY once
-      if (finalChunk) {
-        finalTranscriptRef.current += " " + finalChunk.trim();
-        onFinal && onFinal(finalTranscriptRef.current.trim());
+      // Append final text
+      if (finalChunk.trim()) {
+        finalTranscriptRef.current = (
+          finalTranscriptRef.current +
+          " " +
+          finalChunk
+        ).trim();
+
+        onFinal?.(finalTranscriptRef.current.trim());
       }
 
       resetSilenceTimer();
@@ -64,15 +69,23 @@ export default function Recorder({
     rec.onend = () => {
       setIsListening(false);
 
-      // Final push on stop
+      // On manual or auto stop, send final transcript
       if (finalTranscriptRef.current.trim()) {
-        onFinal && onFinal(finalTranscriptRef.current.trim());
+        onFinal?.(finalTranscriptRef.current.trim());
       }
 
       clearSilenceTimer();
     };
 
     recognitionRef.current = rec;
+
+    // Cleanup on unmount
+    return () => {
+      try {
+        rec.stop();
+      } catch {}
+      clearSilenceTimer();
+    };
   }, []);
 
   function startListening() {
@@ -82,7 +95,10 @@ export default function Recorder({
     try {
       recognitionRef.current.start();
       setIsListening(true);
-    } catch {}
+      resetSilenceTimer();
+    } catch (e) {
+      console.warn("Speech recognition already running");
+    }
   }
 
   function stopListening() {
@@ -120,15 +136,18 @@ export default function Recorder({
         onClick={() => (isListening ? stopListening() : startListening())}
         className={`
           w-24 h-24 rounded-full flex items-center justify-center
+          transition-all duration-200
           ${isListening ? "bg-red-600" : "bg-blue-500"}
         `}
       >
-        <img src={MicIcon} className="w-12 h-12 invert" />
+        <img src={MicIcon} className="w-12 h-12 invert" alt="mic" />
       </button>
 
       <div className="text-sm text-gray-300">
         {isListening ? "Listening…" : "Click mic to start"}
       </div>
+
+      {error && <div className="text-red-400 text-xs mt-2">Error: {error}</div>}
     </div>
   );
 }

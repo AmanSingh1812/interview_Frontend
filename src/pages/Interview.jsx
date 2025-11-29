@@ -4,8 +4,7 @@ import ScoreCard from "../components/ScoreCard";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
-const API = "https://unencroached-kori-debasingly.ngrok-free.dev/api/interview";
+import { API } from "../config";
 
 export default function Interview() {
   const [question, setQuestion] = useState("");
@@ -13,6 +12,7 @@ export default function Interview() {
   const [liveText, setLiveText] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+
   const sessionId = useRef(Date.now().toString());
   const navigate = useNavigate();
 
@@ -23,7 +23,7 @@ export default function Interview() {
   const skill = params.get("skill") || "";
   const level = params.get("level") || "";
 
-  // Prevent entering page without any selection
+  // Prevent opening page with empty values
   useEffect(() => {
     if (!role && !skill && !level) {
       window.location.href = "/select-interview";
@@ -34,7 +34,7 @@ export default function Interview() {
   const loadQuestion = async () => {
     try {
       const res = await axios.get(
-        `${API}/get_question/?role=${role}&skill=${skill}&level=${level}`
+        `${API}get_question/?role=${role}&skill=${skill}&level=${level}`
       );
 
       setQuestion(res.data.text);
@@ -44,7 +44,7 @@ export default function Interview() {
     }
   };
 
-  // Fetch question when any filter changes
+  // Fetch question on filter change
   useEffect(() => {
     if (role || skill || level) {
       loadQuestion();
@@ -64,7 +64,7 @@ export default function Interview() {
     setLoading(true);
 
     try {
-      const res = await axios.post(`${API}/evaluate/`, {
+      const res = await axios.post(`${API}evaluate/`, {
         question,
         answer,
         session_id: sessionId.current,

@@ -1,4 +1,6 @@
 export default function ScoreCard({ result }) {
+  if (!result) return null;
+
   return (
     <div
       className="
@@ -18,7 +20,7 @@ export default function ScoreCard({ result }) {
           drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]
         "
       >
-        Score: {result.score}/10
+        Score: {result.score ?? "N/A"}/10
       </h3>
 
       {/* STRENGTHS */}
@@ -32,7 +34,9 @@ export default function ScoreCard({ result }) {
         >
           Strengths:
         </p>
-        <p className="text-gray-300 leading-relaxed">{result.strengths}</p>
+        <p className="text-gray-300 leading-relaxed">
+          {result.strengths || "No strengths identified"}
+        </p>
       </div>
 
       {/* WEAKNESSES */}
@@ -46,7 +50,9 @@ export default function ScoreCard({ result }) {
         >
           Weaknesses:
         </p>
-        <p className="text-gray-300 leading-relaxed">{result.weaknesses}</p>
+        <p className="text-gray-300 leading-relaxed">
+          {result.weaknesses || "No weaknesses identified"}
+        </p>
       </div>
 
       {/* IMPROVED ANSWER */}
@@ -71,7 +77,8 @@ export default function ScoreCard({ result }) {
             leading-relaxed
           "
         >
-          {result.improved_answer}
+          {result.improved_answer ||
+            "AI could not generate an improved answer."}
         </p>
       </div>
     </div>

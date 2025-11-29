@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API } from "../config";
+
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -11,12 +13,9 @@ export default function Dashboard() {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await axios.get(
-          "https://unencroached-kori-debasingly.ngrok-free.dev/api/dashboard/",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await axios.get(`${API}/dashboard/`,{
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         setStats(res.data);
       } catch (err) {

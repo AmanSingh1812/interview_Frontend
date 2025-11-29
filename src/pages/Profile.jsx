@@ -1,18 +1,40 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-const API = "https://unencroached-kori-debasingly.ngrok-free.dev/api/profile/";
+import { API } from "../config"; // example: https://xxx.ngrok-free.dev/api
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    axios
-      .get(API, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => setProfile(res.data))
-      .catch((err) => console.error(err));
+    async function loadProfile() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("You are not logged in.");
+          return;
+        }
+
+        const res = await axios.get(`${API}/profile/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setProfile(res.data);
+      } catch (err) {
+        console.error("Profile error:", err);
+        setError("Failed to load profile");
+      }
+    }
+
+    loadProfile();
   }, []);
+
+  if (error)
+    return (
+      <p className="text-center text-red-400 mt-10 bg-black min-h-screen">
+        {error}
+      </p>
+    );
 
   if (!profile)
     return (
@@ -41,7 +63,6 @@ export default function Profile() {
           hover:bg-[#111] transition
         "
       >
-        {/* Profile Field */}
         <p className="mb-4 text-gray-300 text-lg">
           <span className="text-[#3b82f6] font-semibold">Name: </span>
           {profile.full_name}
@@ -49,7 +70,7 @@ export default function Profile() {
 
         <p className="mb-4 text-gray-300 text-lg">
           <span className="text-[#3b82f6] font-semibold">Email: </span>
-          {profile.email}
+          {profile.user?.email || "Not provided"}
         </p>
 
         <p className="mb-4 text-gray-300 text-lg">

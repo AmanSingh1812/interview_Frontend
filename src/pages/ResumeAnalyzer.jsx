@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API } from "../config"; // example: https://xxxx.ngrok-free.dev/api
 
 export default function ResumeAnalyzer() {
   const [file, setFile] = useState(null);
@@ -15,13 +16,13 @@ export default function ResumeAnalyzer() {
 
     const formData = new FormData();
     formData.append("resume", file);
-    formData.append("job_description", jobDesc); // optional now
+    formData.append("job_description", jobDesc); // optional
 
     setLoading(true);
 
     try {
       const res = await axios.post(
-        "https://unencroached-kori-debasingly.ngrok-free.dev/api/analyze_resume/",
+        `${API}/analyze_resume/`, // ✅ Correct endpoint
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -37,7 +38,7 @@ export default function ResumeAnalyzer() {
 
   function startInterview() {
     const role = result.best_fit_role || "";
-    const skills = result.top_skills?.split(",")[0] || ""; // pick first skill
+    const skills = result.top_skills?.split(",")[0] || "";
 
     navigate(`/interview?role=${role}&skill=${skills}&level=medium`);
   }
@@ -57,7 +58,7 @@ export default function ResumeAnalyzer() {
           className="w-full mb-6 bg-[#111] p-3 rounded-xl border border-[#1f2937]"
         />
 
-        {/* Optional JOB DESCRIPTION */}
+        {/* JOB DESCRIPTION OPTIONAL */}
         <textarea
           placeholder="Paste Job Description (optional)"
           value={jobDesc}
@@ -66,6 +67,7 @@ export default function ResumeAnalyzer() {
           rows={5}
         />
 
+        {/* SUBMIT */}
         <button
           onClick={submitResume}
           className="w-full p-3 rounded-xl font-semibold bg-[#3b82f6]"
@@ -73,6 +75,7 @@ export default function ResumeAnalyzer() {
           {loading ? "Analyzing..." : "Upload & Analyze"}
         </button>
 
+        {/* RESULT */}
         {result && (
           <div className="mt-8 p-6 rounded-2xl bg-[#111] border border-[#1f2937]">
             <h2 className="text-2xl font-bold text-[#3b82f6]">

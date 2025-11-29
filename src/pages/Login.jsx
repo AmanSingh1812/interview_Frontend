@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-
-const API = "https://unencroached-kori-debasingly.ngrok-free.dev/api/login/";
+import { API } from "../config"; // example: https://xxxx.ngrok-free.dev/api
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -10,14 +9,18 @@ export default function Login() {
 
   async function loginUser() {
     try {
-      const res = await axios.post(API, { username, password });
+      const res = await axios.post(`${API}/login/`, {
+        username,
+        password,
+      });
 
       localStorage.setItem("token", res.data.access);
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("is_admin", res.data.is_admin);
 
       window.location.href = "/profile";
-    } catch {
+    } catch (err) {
+      console.error("Login error:", err);
       setError("Invalid username or password");
     }
   }
@@ -47,7 +50,6 @@ export default function Login() {
           </div>
         )}
 
-        {/* Username Field */}
         <input
           className="
             w-full p-3 mb-4 rounded-xl 
@@ -61,7 +63,6 @@ export default function Login() {
           onChange={(e) => setUsername(e.target.value)}
         />
 
-        {/* Password Field */}
         <input
           className="
             w-full p-3 mb-6 rounded-xl 
@@ -76,7 +77,6 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* Submit Button */}
         <button
           onClick={loginUser}
           className="
